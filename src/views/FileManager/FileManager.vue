@@ -104,8 +104,9 @@ const createFolder = async () => {
 		cancel: true,
 		persistent: true
 	})
-		.onOk(name => {
-			storageStore.CREATE_FOLDER(name)
+		.onOk(async name => {
+			await storageStore.CREATE_FOLDER(name)
+			storageStore.GET_FOLDER_CONTENT(storageStore.selected)
 		})
 		.onCancel(() => {})
 		.onDismiss(() => {})

@@ -1,4 +1,5 @@
 import { useFilesStore } from '@/store/files'
+import { useAppStore } from '@/store/app'
 import { instance } from './api'
 
 export const Files = {
@@ -114,21 +115,31 @@ export const Files = {
 			console.log(error.response.data.message)
 		}
 	},
-	// async uploadAvatar(files) {
-	// 	try {
-	// 		const formData = new FormData()
-	// 		formData.append('file', files)
-	// 		const controller = new AbortController()
-	// 		const res = await instance.post('api/files/avatar', formData, {
-	// 			signal: controller.signal,
-	// 			headers: {
-	// 				'Content-Type': 'multipart/form-data'
-	// 			}
-	// 		})
-	// 		return res
-	// 	} catch (error) {
-	// 		console.warn(error)
-	// 		return error
-	// 	}
-	// }
+	async uploadAvatar(files) {
+		try {
+			const formData = new FormData()
+			formData.append('file', files)
+			const appStore = useAppStore()
+			appStore.avatarUploadController = new AbortController()
+			const res = await instance.post('api/files/avatar', formData, {
+				signal: appStore.avatarUploadController.signal,
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			})
+			return res
+		} catch (error) {
+			console.warn(error)
+			return error
+		}
+	},
+	async removeAvatar() {
+		try {
+			const res = await instance.delete('api/files/avatar')
+			return res
+		} catch (error) {
+			console.warn(error)
+			return error
+		}
+	}
 }

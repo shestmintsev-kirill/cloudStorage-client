@@ -1,14 +1,14 @@
 <template>
 	<dialog-draggable-resizable
-		:seamless="false"
 		id="file-uploader"
-		:model-value="mdVal"
 		title="Files upload"
+		class="q-pa-none"
+		:seamless="false"
+		:model-value="mdVal"
 		:content-width="790"
 		:contentMinHeight="470"
 		:content-min-width="280"
 		@onHide="onDialogHide"
-		class="q-pa-none"
 	>
 		<div class="column justify-between full-height">
 			<q-card-section class="row">

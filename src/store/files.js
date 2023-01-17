@@ -39,11 +39,13 @@ export const useFilesStore = defineStore('files', {
 			for (const file of this.files) {
 				if (this.files?.some(mainFile => mainFile.name === file.name)) {
 					const res = await Files.uploadFile(file, storageStore.selected)
-					const status = res?.message === 'canceled' ? 'OK' : res?.statusText || false
+					const status = res?.message === 'canceled' ? 'cancel' : res?.statusText || false
 					results.push(status)
 				}
 			}
-			if (results.every(status => status === 'OK')) {
+			if (results.every(status => status === 'cancel')) {
+				$snackBar.warning('Upload has been canceled')
+			} else if (results.every(status => status === 'OK' || status === 'cancel')) {
 				$snackBar.success('Uploaded successfully')
 			} else {
 				$snackBar.error('Upload failed')

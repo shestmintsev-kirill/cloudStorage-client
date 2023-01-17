@@ -14,23 +14,48 @@
 
 			<template v-if="appStore.getIsAuth">
 				<q-btn flat round color="domrf-primary">
-					<q-avatar size="md" icon="person">
-						<q-menu :offset="[1, 10]">
+					<q-avatar size="lg">
+						<q-img no-spinner v-if="avatar" :src="'http://localhost:3000/' + avatar" />
+						<img v-else src="@/assets/avatar_default.svg" alt="avatar" />
+						<q-menu
+							:offset="[1, 10]"
+							style="width: 200px"
+							transition-hide="scale"
+							ref="userMenu"
+						>
 							<q-list>
 								<q-item-label header>{{
 									appStore.getCurrentUser?.email || ''
 								}}</q-item-label>
 								<input
+									accept="image/*"
 									ref="fileInput"
 									v-show="false"
 									type="file"
-									@change="changeFile"
+									@change="uploadAvatar"
 								/>
-								<q-item clickable @click="uploadAvatar">
+								<q-item clickable @click="avatarEvent">
 									<q-item-section side class="q-pr-md">
-										<q-icon size="20px" name="upload" />
+										<template v-if="!!appStore.avatarUploadController">
+											<q-btn
+												flat
+												round
+												icon="close"
+												color="red"
+												size="xs"
+												@click.prevent="
+													appStore.avatarUploadController.abort()
+												"
+											/>
+											<q-linear-progress indeterminate />
+										</template>
+										<q-icon
+											v-else
+											size="20px"
+											:name="avatar ? 'delete' : 'upload'"
+										/>
 									</q-item-section>
-									<q-item-section>Upload avatar</q-item-section>
+									<q-item-section>{{ avatarBtnText }}</q-item-section>
 								</q-item>
 								<q-item clickable @click="logout">
 									<q-item-section side class="q-pr-md">
@@ -84,13 +109,21 @@
 <script setup>
 import { useAppStore } from '@/store/app'
 import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
 import $snackBar from '@/utils/snackBar'
-import { ref } from 'vue'
 
 const appStore = useAppStore()
 const router = useRouter()
 
 const fileInput = ref(null)
+const userMenu = ref(null)
+
+const avatar = computed(() => appStore.currentUser.avatar)
+const avatarBtnText = computed(() =>
+	avatar.value
+		? 'Remove avatar'
+		: `${appStore.avatarUploadController ? 'Avatar is uploading' : 'Upload avatar'}`
+)
 
 const logout = () => {
 	appStore.SET_USER(null)
@@ -98,9 +131,16 @@ const logout = () => {
 	$snackBar.success('Logout')
 }
 
-const uploadAvatar = () => fileInput.value.click()
+const avatarEvent = async () => {
+	if (appStore.avatarUploadController) return
+	if (avatar.value) {
+		await appStore.REMOVE_AVATAR()
+		userMenu.value?.hide()
+	} else fileInput.value.click()
+}
 
-const changeFile = () => {
-	console.log(fileInput.value.files)
+const uploadAvatar = async () => {
+	await appStore.UPLOAD_AVATAR(fileInput.value.files[0])
+	userMenu.value?.hide()
 }
 </script>
