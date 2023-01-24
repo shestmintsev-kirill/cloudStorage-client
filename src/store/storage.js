@@ -14,13 +14,25 @@ export const useStorageStore = defineStore('storage', {
 		sort: null,
 		searchValue: '',
 		isPauseForHistory: false,
-		isFolderContentLoading: false
+		isFolderContentLoading: false,
+		isTreeLoading: false
 	}),
-	getters: {},
+	getters: {
+		getSelectedNode: state => {
+			return $app.findElementInDeepArray(state.filesTree, item => item.id === state.selected)
+		}
+	},
 	actions: {
 		async GET_TREE(sortType) {
-			const res = await Files.getFiles(null, sortType)
-			this.filesTree = this.PREPARED_FOLDER_DATA(res.data, 1)
+			try {
+				this.isTreeLoading = true
+				const res = await Files.getFiles(null, sortType)
+				this.filesTree = this.PREPARED_FOLDER_DATA(res.data, 1)
+			} catch (error) {
+				console.error(error)
+			} finally {
+				this.isTreeLoading = false
+			}
 		},
 		async GET_FOLDER_CONTENT(folderId) {
 			if (!folderId) return
@@ -41,16 +53,13 @@ export const useStorageStore = defineStore('storage', {
 		PREPARED_FOLDER_DATA(nodes, lvl, isOnlyFolders) {
 			if (lvl > 1) localStorage.lvl = lvl
 			const preparedNodes = nodes.map(node => ({
+				...node,
 				lvl,
 				id: node._id,
-				name: node.name,
-				type: node.type,
 				size: $app.formatSize(node.size),
-				date: node.date,
 				icon: node.type === 'dir' ? 'folder' : 'description',
 				label: node.name,
 				lazy: !!node.children.length,
-				children: node.children,
 				isDownloading: false
 			}))
 			if (isOnlyFolders) return preparedNodes.filter(node => node.type === 'dir')
@@ -77,18 +86,29 @@ export const useStorageStore = defineStore('storage', {
 			this.GET_FOLDER_CONTENT(nodeId)
 		},
 		async GET_TREE_ACCORDING_PAST_LVL() {
-			await this.GET_TREE()
-			const savedLvl = +localStorage?.lvl ?? 1
-			const updateRecursiveFn = nodes => {
-				nodes.forEach(async node => {
-					if (this.expanded.includes(node.id)) node.icon = 'folder_open'
-					if (node.lvl > savedLvl) return
-					const res = await Files.getFiles(node.id)
-					node.children = this.PREPARED_FOLDER_DATA(res.data, node.lvl + 1, true)
-					updateRecursiveFn(node.children)
-				})
+			try {
+				this.isTreeLoading = true
+				this.expanded = []
+				this.filesTree = []
+				await this.GET_TREE()
+				// TODO to make update tree to last lvl
+				// const savedLvl = +localStorage?.lvl ?? 1
+				// const updateRecursiveFn = async nodes => {
+				// 	for (const node of nodes) {
+				// 		console.log(node)
+				// 		if (this.expanded.includes(node.id)) node.icon = 'folder_open'
+				// 		if (node.lvl > savedLvl || !node.children.length) return
+				// 		const res = await Files.getFiles(node.id)
+				// 		node.children = this.PREPARED_FOLDER_DATA(res.data, node.lvl + 1, true)
+				// 		await updateRecursiveFn(node.children)
+				// 	}
+				// }
+				// await updateRecursiveFn(this.filesTree)
+			} catch (error) {
+				console.error(error)
+			} finally {
+				this.isTreeLoading = false
 			}
-			updateRecursiveFn(this.filesTree)
 		},
 		async OPEN_FOLDER({ node, key, done }) {
 			if (key.indexOf('Lazy load empty') > -1) {
@@ -131,6 +151,14 @@ export const useStorageStore = defineStore('storage', {
 			}
 		},
 		async DELETE_NODE(node) {
+			// const parentName = node.path.split('/').at(-2)
+			// if (parentName) {
+			// 	const parentNode = $app.findElementInDeepArray(
+			// 		this.filesTree,
+			// 		item => item.name === parentName
+			// 	)
+			// 	if (parentNode.children.length === 1) parentNode.icon = 'folder'
+			// }
 			const res = await Files.deleteNode(node)
 			if (res.statusText === 'OK') {
 				if (node.type === 'dir') this.GET_TREE_ACCORDING_PAST_LVL()

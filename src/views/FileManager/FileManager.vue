@@ -34,11 +34,26 @@
 			class="full-height q-my-none"
 		>
 			<template v-slot:before>
-				<FoldersTree />
+				<q-card-section v-if="storageStore.isTreeLoading">
+					<template v-for="i in 2" :key="i">
+						<q-skeleton
+							v-for="n in 5"
+							:key="n"
+							type="text"
+							:width="`${n + i}0%`"
+							height="35px"
+							animation="fade"
+						/>
+					</template>
+				</q-card-section>
+				<FoldersTree v-else :contextMenuItems="contextMenuItems" />
 			</template>
 
 			<template v-slot:after>
-				<CloudTable v-if="storageStore.selected || storageStore.searchValue" />
+				<CloudTable
+					v-if="storageStore.selected || storageStore.searchValue"
+					:contextMenuItems="contextMenuItems"
+				/>
 			</template>
 		</q-splitter>
 		<q-separator class="q-mt-none" />
@@ -55,10 +70,36 @@ import CloudTable from '@/components/FileManager/CloudTable.vue'
 import { computed, onMounted, watch } from 'vue'
 import $app from '@/utils/app'
 import { useQuasar } from 'quasar'
+import { useFilesStore } from '@/store/files'
 
 const $q = useQuasar()
 const appStore = useAppStore()
 const storageStore = useStorageStore()
+const filesStore = useFilesStore()
+
+const contextMenuItems = [
+	{
+		name: () => 'Download file',
+		condition: node => node.type !== 'dir',
+		handle: node => {
+			filesStore.DOWNLOAD_FILE(node)
+		}
+	},
+	{
+		name: () => 'Open folder',
+		condition: node => node.type === 'dir',
+		handle: node => {
+			storageStore.SET_SELECTED(node.id)
+		}
+	},
+	{
+		name: node => `Delete ${node.type === 'dir' ? 'folder' : 'file'}`,
+		condition: () => true,
+		handle: node => {
+			storageStore.DELETE_NODE(node)
+		}
+	}
+]
 
 watch(
 	computed(() => storageStore.expanded),

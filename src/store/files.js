@@ -10,7 +10,6 @@ export const useFilesStore = defineStore('files', {
 		progressFiles: [],
 		files: null
 	}),
-	getters: {},
 	actions: {
 		SET_FILE(file) {
 			this.progressFiles.push(file)

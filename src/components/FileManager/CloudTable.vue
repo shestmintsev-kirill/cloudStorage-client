@@ -20,11 +20,23 @@
 				:disable="isDisableHistoryBtns || storageStore.history.at(-1)?.open"
 				flat
 				round
+				class="q-mr-xl"
 				icon="arrow_forward_ios"
 				color="grey"
 				size="sm"
 				@click="historyHandler(false)"
 			/>
+			<q-breadcrumbs active-color="grey-7">
+				<template v-slot:separator>
+					<q-icon size="1.2em" name="arrow_forward" color="grey-8" />
+				</template>
+				<q-breadcrumbs-el
+					v-for="(el, index) in storageStore.getSelectedNode?.path?.split('/')"
+					:key="index"
+					:label="el"
+					icon="folder"
+				/>
+			</q-breadcrumbs>
 		</template>
 		<template v-slot:header="props">
 			<q-tr :props="props">
@@ -84,32 +96,16 @@ import { useFilesStore } from '@/store/files'
 import { columns } from '@/constants/cloudTable'
 import { computed } from 'vue'
 
+defineProps({
+	contextMenuItems: {
+		type: Array,
+		required: true,
+		default: () => []
+	}
+})
+
 const storageStore = useStorageStore()
 const filesStore = useFilesStore()
-
-const contextMenuItems = [
-	{
-		name: () => 'Download file',
-		condition: node => node.type !== 'dir',
-		handle: node => {
-			filesStore.DOWNLOAD_FILE(node)
-		}
-	},
-	{
-		name: () => 'Open folder',
-		condition: node => node.type === 'dir',
-		handle: node => {
-			storageStore.SET_SELECTED(node.id)
-		}
-	},
-	{
-		name: node => `Delete ${node.type === 'dir' ? 'folder' : 'file'}`,
-		condition: () => true,
-		handle: node => {
-			storageStore.DELETE_NODE(node)
-		}
-	}
-]
 
 const isDisableHistoryBtns = computed(
 	() => !storageStore.history.length || storageStore.isFolderContentLoading
