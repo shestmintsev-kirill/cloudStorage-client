@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useStorageStore } from '@/store/storage'
 
 defineProps({
@@ -53,6 +53,10 @@ const storageStore = useStorageStore()
 const tree = ref(null)
 
 const labelForTree = label => (label.length > 20 ? `${label?.substr(0, 20)}...` : label)
+
+onMounted(() => {
+	storageStore.treeRef = tree
+})
 
 watch(
 	computed(() => storageStore.selected),

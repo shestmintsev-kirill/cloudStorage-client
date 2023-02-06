@@ -15,7 +15,9 @@ export const useStorageStore = defineStore('storage', {
 		searchValue: '',
 		isPauseForHistory: false,
 		isFolderContentLoading: false,
-		isTreeLoading: false
+		isTreeLoading: false,
+		storageLoading: false,
+		treeRef: null
 	}),
 	getters: {
 		getSelectedNode: state => {
@@ -87,27 +89,38 @@ export const useStorageStore = defineStore('storage', {
 		},
 		async GET_TREE_ACCORDING_PAST_LVL() {
 			try {
-				this.isTreeLoading = true
-				this.expanded = []
+				this.storageLoading = true
 				this.filesTree = []
 				await this.GET_TREE()
-				// TODO to make update tree to last lvl
-				// const savedLvl = +localStorage?.lvl ?? 1
-				// const updateRecursiveFn = async nodes => {
-				// 	for (const node of nodes) {
-				// 		console.log(node)
-				// 		if (this.expanded.includes(node.id)) node.icon = 'folder_open'
-				// 		if (node.lvl > savedLvl || !node.children.length) return
-				// 		const res = await Files.getFiles(node.id)
-				// 		node.children = this.PREPARED_FOLDER_DATA(res.data, node.lvl + 1, true)
-				// 		await updateRecursiveFn(node.children)
-				// 	}
-				// }
-				// await updateRecursiveFn(this.filesTree)
+
+				const expanded = this.expanded.length
+					? this.expanded
+					: localStorage?.expanded
+					? JSON.parse(localStorage.expanded)
+					: []
+
+				const acc = []
+
+				const updateRecursiveFn = async nodes => {
+					for (const node of nodes) {
+						console.log(node)
+						if (expanded.includes(node.id)) {
+							this.treeRef.setExpanded(node.id, true)
+							if (node.children.length) node.icon = 'folder_open'
+							node.lazy = false
+							const res = await Files.getFiles(node.id)
+							node.children = this.PREPARED_FOLDER_DATA(res.data, node.lvl + 1, true)
+							acc.push(node.id)
+							await updateRecursiveFn(node.children)
+						}
+					}
+				}
+				await updateRecursiveFn(this.filesTree)
+				this.expanded = acc
 			} catch (error) {
 				console.error(error)
 			} finally {
-				this.isTreeLoading = false
+				this.storageLoading = false
 			}
 		},
 		async OPEN_FOLDER({ node, key, done }) {
@@ -121,20 +134,22 @@ export const useStorageStore = defineStore('storage', {
 				done(childNodes)
 			}
 		},
-		async CREATE_FOLDER(name) {
+		async CREATE_FOLDER(name, parentId) {
 			try {
 				const res = await Files.createFolder({
 					name,
 					type: 'dir',
-					parent: this.selected
+					parent: parentId
 				})
 				if (res.status === 200) {
-					const response = await Files.getFiles(this.selected)
+					const response = await Files.getFiles(parentId)
 
 					const updatedNode = $app.findElementInDeepArray(
 						this.filesTree,
-						item => item.id === this.selected
+						item => item.id === parentId
 					)
+
+					console.log(updatedNode)
 
 					if (updatedNode) {
 						updatedNode.children = this.PREPARED_FOLDER_DATA(
@@ -159,12 +174,21 @@ export const useStorageStore = defineStore('storage', {
 			// 	)
 			// 	if (parentNode.children.length === 1) parentNode.icon = 'folder'
 			// }
-			const res = await Files.deleteNode(node)
-			if (res.statusText === 'OK') {
-				if (node.type === 'dir') this.GET_TREE_ACCORDING_PAST_LVL()
-				this.GET_FOLDER_CONTENT(this.selected)
-				$snackBar.success('Deleted successfully')
-			} else {
+			try {
+				const res = await Files.deleteNode(node)
+				if (res.statusText === 'OK') {
+					this.expanded = this.expanded.filter(id => id !== node.id)
+
+					if (this.selected === node.id) this.selected = null
+
+					if (node.type === 'dir') await this.GET_TREE_ACCORDING_PAST_LVL()
+
+					await this.GET_FOLDER_CONTENT(this.selected)
+
+					$snackBar.success('Deleted successfully')
+				} else $snackBar.error(res?.message ? res.message : 'Deleted failed')
+			} catch (error) {
+				console.error(error)
 				$snackBar.error('Deleted failed')
 			}
 		}

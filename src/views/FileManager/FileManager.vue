@@ -1,6 +1,6 @@
 <template>
 	<div class="q-pa-md q-gutter-sm full-height">
-		<ToolbarBtns @createFolder="createFolder" @createFile="createFile" />
+		<ToolbarBtns @createFolder="createFolder(storageStore.selected)" @createFile="createFile" />
 
 		<q-input
 			v-model="storageStore.searchValue"
@@ -34,7 +34,7 @@
 			class="full-height q-my-none"
 		>
 			<template v-slot:before>
-				<q-card-section v-if="storageStore.isTreeLoading">
+				<q-card-section v-show="isLoading">
 					<template v-for="i in 2" :key="i">
 						<q-skeleton
 							v-for="n in 5"
@@ -46,7 +46,7 @@
 						/>
 					</template>
 				</q-card-section>
-				<FoldersTree v-else :contextMenuItems="contextMenuItems" />
+				<FoldersTree v-show="!isLoading" :contextMenuItems="contextMenuItems" />
 			</template>
 
 			<template v-slot:after>
@@ -86,8 +86,15 @@ const contextMenuItems = [
 		}
 	},
 	{
-		name: () => 'Open folder',
+		name: () => 'Create folder',
 		condition: node => node.type === 'dir',
+		handle: node => {
+			createFolder(node.id)
+		}
+	},
+	{
+		name: () => 'Open folder',
+		condition: node => node.type === 'dir' && node.id !== storageStore.selected,
 		handle: node => {
 			storageStore.SET_SELECTED(node.id)
 		}
@@ -100,6 +107,8 @@ const contextMenuItems = [
 		}
 	}
 ]
+
+const isLoading = computed(() => storageStore.isTreeLoading || storageStore.storageLoading)
 
 watch(
 	computed(() => storageStore.expanded),
@@ -114,12 +123,13 @@ watch(
 			item => item.id === findFolderId
 		)
 		if (node) node.icon = oldIsBigger ? 'folder' : 'folder_open'
+		localStorage.expanded = JSON.stringify(newValue)
 	}
 )
 
 onMounted(() => {
 	appStore.SET_DRAWER_STATE(false)
-	storageStore.GET_TREE()
+	storageStore.GET_TREE_ACCORDING_PAST_LVL()
 })
 
 const createFile = async () => {
@@ -134,7 +144,7 @@ const createFile = async () => {
 	})
 }
 
-const createFolder = async () => {
+const createFolder = async parentId => {
 	$q.dialog({
 		title: 'Create new folder',
 		message: 'Folder name',
@@ -146,8 +156,8 @@ const createFolder = async () => {
 		persistent: true
 	})
 		.onOk(async name => {
-			await storageStore.CREATE_FOLDER(name)
-			storageStore.GET_FOLDER_CONTENT(storageStore.selected)
+			await storageStore.CREATE_FOLDER(name, parentId)
+			if (storageStore.selected) storageStore.GET_FOLDER_CONTENT(storageStore.selected)
 		})
 		.onCancel(() => {})
 		.onDismiss(() => {})

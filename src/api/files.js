@@ -101,6 +101,7 @@ export const Files = {
 			return res
 		} catch (error) {
 			console.log(error.response.data.message)
+			return error.response.data
 		}
 	},
 	async searchFiles(search) {
