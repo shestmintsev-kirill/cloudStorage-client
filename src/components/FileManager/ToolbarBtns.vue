@@ -22,7 +22,13 @@
 			</q-list>
 		</q-menu>
 	</q-btn>
-	<q-btn round color="primary" icon="refresh" @click="storageStore.GET_TREE_ACCORDING_PAST_LVL" />
+	<q-btn
+		:loading="storageStore.storageLoading"
+		round
+		color="primary"
+		icon="refresh"
+		@click="storageStore.GET_TREE_ACCORDING_PAST_LVL"
+	/>
 </template>
 
 <script setup>

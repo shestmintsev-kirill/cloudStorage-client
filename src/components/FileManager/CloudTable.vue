@@ -48,7 +48,7 @@
 		</template>
 		<template v-slot:body="props">
 			<q-tr :props="props" @dblclick="tableNodeEvent(props.row)">
-				<q-menu touch-position context-menu>
+				<q-menu touch-position context-menu auto-close>
 					<q-list dense style="min-width: 100px">
 						<template v-for="item in contextMenuItems" :key="item.key">
 							<q-item
@@ -60,6 +60,7 @@
 							>
 								<q-item-section>{{ item.name(props.row) }}</q-item-section>
 							</q-item>
+							<q-separator v-if="item.condition(props.row)"/>
 						</template>
 					</q-list>
 				</q-menu>

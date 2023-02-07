@@ -21,7 +21,8 @@ export const Files = {
 			const res = await instance.post('api/files/', body)
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.error(error.response.data.message)
+			return error.response.data
 		}
 	},
 	async uploadFile(files, folderId) {

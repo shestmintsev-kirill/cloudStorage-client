@@ -111,7 +111,12 @@
 				</q-uploader>
 			</q-card-section>
 			<q-card-actions ref="actionBtns" align="right" class="fixed-actions q-pa-lg">
-				<q-btn label="Upload" color="blue" @click="onSubmit" />
+				<q-btn
+					:disable="!!filesStore.progressFiles.length"
+					label="Upload"
+					color="blue"
+					@click="onSubmit"
+				/>
 				<q-btn outline color="blue" label="Cancel" @click="onDialogHide" />
 			</q-card-actions>
 		</div>
@@ -126,9 +131,14 @@ import { useFilesStore } from '@/store/files'
 const filesStore = useFilesStore()
 
 const emit = defineEmits(['show', 'hide', 'onDialogHide'])
+
 const props = defineProps({
+	selectedFolderId: {
+		type: String,
+		required: true
+	},
 	updateFn: {
-		type: [Function],
+		type: Function,
 		default: () => ({})
 	}
 })
@@ -138,7 +148,7 @@ onUnmounted(() => {
 })
 
 const onSubmit = async () => {
-	await filesStore.ON_SUBMIT(props.updateFn)
+	await filesStore.ON_SUBMIT(props.updateFn, props.selectedFolderId)
 	hide()
 }
 

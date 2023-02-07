@@ -93,6 +93,14 @@ const contextMenuItems = [
 		}
 	},
 	{
+		name: () => 'Create file',
+		condition: node => node.type === 'dir',
+		handle: node => {
+			console.log(node.id)
+			createFile(node.id)
+		}
+	},
+	{
 		name: () => 'Open folder',
 		condition: node => node.type === 'dir' && node.id !== storageStore.selected,
 		handle: node => {
@@ -132,11 +140,11 @@ onMounted(() => {
 	storageStore.GET_TREE_ACCORDING_PAST_LVL()
 })
 
-const createFile = async () => {
+const createFile = async (selectedFolderId = storageStore.selected) => {
 	$q.dialog({
 		component: FileUploader,
 		componentProps: {
-			selectedFolderId: storageStore.selected,
+			selectedFolderId,
 			updateFn: () => {
 				storageStore.GET_FOLDER_CONTENT(storageStore.selected)
 			}

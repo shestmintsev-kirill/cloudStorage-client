@@ -16,7 +16,7 @@
 						<q-tooltip class="text-body2">{{ prop.node.label }}</q-tooltip>
 					</div>
 				</div>
-				<q-menu touch-position context-menu>
+				<q-menu touch-position context-menu auto-close>
 					<q-list dense style="min-width: 100px">
 						<template v-for="item in contextMenuItems" :key="item.key">
 							<q-item
@@ -61,6 +61,7 @@ onMounted(() => {
 watch(
 	computed(() => storageStore.selected),
 	newNodeId => {
+		localStorage.selected = JSON.stringify(newNodeId)
 		if (newNodeId) {
 			tree.value.setExpanded(newNodeId, true)
 			storageStore.SET_FOLDER_CONTENT(newNodeId)

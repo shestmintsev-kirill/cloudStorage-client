@@ -1,9 +1,6 @@
 import { defineStore } from 'pinia'
 import $snackBar from '@/utils/snackBar'
 import { Files } from '@/api/files'
-import { useStorageStore } from './storage'
-
-const storageStore = useStorageStore()
 
 export const useFilesStore = defineStore('files', {
 	state: () => ({
@@ -14,8 +11,9 @@ export const useFilesStore = defineStore('files', {
 		SET_FILE(file) {
 			this.progressFiles.push(file)
 		},
-		RESET_PROGRESS_FILES() {
+		RESET_UPLOAD_PROCESS() {
 			this.progressFiles = []
+			this.files = null
 		},
 		ABORT_LEFT_FILES() {
 			if (!this.progressFiles.length) return
@@ -33,11 +31,11 @@ export const useFilesStore = defineStore('files', {
 			this.files = this.files.filter(file => file.name !== removeFile.name)
 			scope.removeFile(removeFile)
 		},
-		async ON_SUBMIT(updateFn) {
+		async ON_SUBMIT(updateFn, selectedFolderId) {
 			const results = []
 			for (const file of this.files) {
 				if (this.files?.some(mainFile => mainFile.name === file.name)) {
-					const res = await Files.uploadFile(file, storageStore.selected)
+					const res = await Files.uploadFile(file, selectedFolderId)
 					const status = res?.message === 'canceled' ? 'cancel' : res?.statusText || false
 					results.push(status)
 				}
@@ -51,7 +49,7 @@ export const useFilesStore = defineStore('files', {
 				console.log(results)
 			}
 			updateFn()
-			this.RESET_PROGRESS_FILES()
+			this.RESET_UPLOAD_PROCESS()
 		},
 		UPLOADED(givenFiles) {
 			if (this.files) this.files = [...this.files, ...givenFiles]

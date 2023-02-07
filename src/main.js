@@ -10,9 +10,10 @@ import clickBackDropDialog from './directives/clickBackDropDialog'
 import dialogDraggableResizable from './components/DraggableResizableDialog/DraggableResizableDialog.vue'
 import appUtils from './utils/app'
 import { createPinia } from 'pinia'
+import { VueQueryPlugin } from 'vue-query'
 
 const app = createApp(App)
-app.use(createPinia()).use(Quasar, quasarUserOptions).use(router)
+app.use(createPinia()).use(Quasar, quasarUserOptions).use(router).use(VueQueryPlugin)
 app.directive('table-resizable-columns', tableResizableColumns)
 app.directive('draggable-resizable', draggableResizable)
 app.directive('toggle-active-state', toggleActiveState)
