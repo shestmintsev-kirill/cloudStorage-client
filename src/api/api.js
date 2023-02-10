@@ -1,13 +1,7 @@
 import axios from 'axios'
 
 export const instance = axios.create({
-	// withCredentials: true,
 	baseURL: 'http://localhost:3000/'
-	// headers: {
-	// 	Authorization: localStorage.getItem('cloudToken')
-	// 		? `Bearer ${localStorage.getItem('cloudToken')}`
-	// 		: ''
-	// }
 })
 
 instance.interceptors.request.use(

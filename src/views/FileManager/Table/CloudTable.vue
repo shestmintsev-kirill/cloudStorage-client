@@ -48,22 +48,7 @@
 		</template>
 		<template v-slot:body="props">
 			<q-tr :props="props" @dblclick="tableNodeEvent(props.row)">
-				<q-menu touch-position context-menu auto-close>
-					<q-list dense style="min-width: 100px">
-						<template v-for="item in contextMenuItems" :key="item.key">
-							<q-item
-								v-if="item.condition(props.row)"
-								:disable="props.row.isDownloading"
-								clickable
-								v-close-popup
-								@click="item.handle(props.row)"
-							>
-								<q-item-section>{{ item.name(props.row) }}</q-item-section>
-							</q-item>
-							<q-separator v-if="item.condition(props.row)"/>
-						</template>
-					</q-list>
-				</q-menu>
+				<ContextMenu :contextMenuElements="storageContextMenu" :targetElement="props.row" />
 				<q-td auto-width>
 					<q-btn
 						v-if="props.row.isDownloading"
@@ -96,9 +81,10 @@ import { useStorageStore } from '@/store/storage'
 import { useFilesStore } from '@/store/files'
 import { columns } from '@/constants/cloudTable'
 import { computed } from 'vue'
+import ContextMenu from '@/components/ContextMenu/ContextMenu.vue'
 
 defineProps({
-	contextMenuItems: {
+	storageContextMenu: {
 		type: Array,
 		required: true,
 		default: () => []

@@ -14,8 +14,8 @@ import { Auth } from '@/api/auth'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQueryProvider } from 'vue-query'
-import Header from '@/components/Header.vue'
-import Drawer from '@/components/Drawer.vue'
+import Header from '@/views/Header/Header.vue'
+import Drawer from '@/views/Drawer/Drawer.vue'
 import $snackBar from '@/utils/snackBar'
 
 useQueryProvider()

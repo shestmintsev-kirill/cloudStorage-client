@@ -7,7 +7,7 @@
 			label="Search files"
 			@update:model-value="value => storageStore.SEARCH_REQUEST(value)"
 		>
-			<template v-slot:append>
+			<template v-if="storageStore.searchValue.length" v-slot:append>
 				<q-icon
 					name="close"
 					class="cursor-pointer"
@@ -46,13 +46,13 @@
 						/>
 					</template>
 				</q-card-section>
-				<FoldersTree v-show="!isLoading" :contextMenuItems="contextMenuItems" />
+				<FoldersTree v-show="!isLoading" :storageContextMenu="storageContextMenu" />
 			</template>
 
 			<template v-slot:after>
 				<CloudTable
 					v-if="storageStore.selected || storageStore.searchValue"
-					:contextMenuItems="contextMenuItems"
+					:storageContextMenu="storageContextMenu"
 				/>
 			</template>
 		</q-splitter>
@@ -61,12 +61,12 @@
 </template>
 
 <script setup>
-import FileUploader from '@/components/Uploader/FileUploader.vue'
-import ToolbarBtns from '@/components/FileManager/ToolbarBtns.vue'
-import FoldersTree from '@/components/FileManager/FoldersTree.vue'
+import FileUploader from '@/views/FileManager/FileUploader/FileUploader.vue'
+import ToolbarBtns from '@/views/FileManager/ToolBar/ToolbarBtns.vue'
+import FoldersTree from '@/views/FileManager/Tree/FoldersTree.vue'
 import { useAppStore } from '@/store/app'
 import { useStorageStore } from '@/store/storage'
-import CloudTable from '@/components/FileManager/CloudTable.vue'
+import CloudTable from '@/views/FileManager/Table/CloudTable.vue'
 import { computed, onMounted, watch } from 'vue'
 import $app from '@/utils/app'
 import { useQuasar } from 'quasar'
@@ -77,7 +77,7 @@ const appStore = useAppStore()
 const storageStore = useStorageStore()
 const filesStore = useFilesStore()
 
-const contextMenuItems = [
+const storageContextMenu = [
 	{
 		name: () => 'Download file',
 		condition: node => node.type !== 'dir',
@@ -130,7 +130,13 @@ watch(
 			storageStore.filesTree,
 			item => item.id === findFolderId
 		)
-		if (node) node.icon = oldIsBigger ? 'folder' : 'folder_open'
+		if (node) {
+			// if (!oldIsBigger) {
+			// 	const res = await Files.getFiles(node.id)
+			// 	node.children = storageStore.PREPARED_FOLDER_DATA(res.data, true)
+			// }
+			node.icon = oldIsBigger ? 'folder' : 'folder_open'
+		}
 		localStorage.expanded = JSON.stringify(newValue)
 	}
 )

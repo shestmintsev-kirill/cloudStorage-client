@@ -163,6 +163,7 @@ export const useStorageStore = defineStore('storage', {
 					)
 
 					if (updatedNode) {
+						updatedNode.icon = 'folder_open'
 						updatedNode.children = this.PREPARED_FOLDER_DATA(response.data, true)
 					} else this.GET_TREE()
 
@@ -185,6 +186,7 @@ export const useStorageStore = defineStore('storage', {
 				const res = await Files.deleteNode(node)
 				if (res.statusText === 'OK') {
 					this.expanded = this.expanded.filter(id => id !== node.id)
+					this.history = this.history.filter(folder => folder.folderId !== node.id)
 
 					if (this.selected === node.id) this.selected = null
 
