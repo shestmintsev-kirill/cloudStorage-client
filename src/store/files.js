@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import $snackBar from '@/utils/snackBar'
+import $snackBar from '@/services/snackBar'
 import { Files } from '@/api/files'
 
 export const useFilesStore = defineStore('files', {

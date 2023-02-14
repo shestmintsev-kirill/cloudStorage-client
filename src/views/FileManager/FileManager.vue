@@ -68,9 +68,10 @@ import { useAppStore } from '@/store/app'
 import { useStorageStore } from '@/store/storage'
 import CloudTable from '@/views/FileManager/Table/CloudTable.vue'
 import { computed, onMounted, watch } from 'vue'
-import $app from '@/utils/app'
+import $app from '@/helpers'
 import { useQuasar } from 'quasar'
 import { useFilesStore } from '@/store/files'
+import { Files } from '@/api/files'
 
 const $q = useQuasar()
 const appStore = useAppStore()
@@ -120,7 +121,7 @@ const isLoading = computed(() => storageStore.isTreeLoading || storageStore.stor
 
 watch(
 	computed(() => storageStore.expanded),
-	(newValue, oldValue) => {
+	async (newValue, oldValue) => {
 		const oldIsBigger = oldValue.length > newValue.length
 		const findFolderId = oldIsBigger
 			? oldValue.find(id => newValue.indexOf(id) === -1)
@@ -131,10 +132,10 @@ watch(
 			item => item.id === findFolderId
 		)
 		if (node) {
-			// if (!oldIsBigger) {
-			// 	const res = await Files.getFiles(node.id)
-			// 	node.children = storageStore.PREPARED_FOLDER_DATA(res.data, true)
-			// }
+			if (!oldIsBigger && node.children.every(child => typeof child === 'string')) {
+				const res = await Files.getFiles(node.id)
+				node.children = storageStore.PREPARED_FOLDER_DATA(res.data, true)
+			}
 			node.icon = oldIsBigger ? 'folder' : 'folder_open'
 		}
 		localStorage.expanded = JSON.stringify(newValue)

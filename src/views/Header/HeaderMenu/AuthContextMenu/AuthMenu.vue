@@ -40,7 +40,7 @@
 import { useAppStore } from '@/store/app'
 import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
-import $snackBar from '@/utils/snackBar'
+import $snackBar from '@/services/snackBar'
 
 const appStore = useAppStore()
 const router = useRouter()

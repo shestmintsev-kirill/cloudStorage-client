@@ -38,7 +38,7 @@ import { Auth } from '@/api/auth'
 import { useAppStore } from '@/store/app'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import $snackBar from '@/utils/snackBar'
+import $snackBar from '@/services/snackBar'
 
 const { SET_USER } = useAppStore()
 const route = useRoute()

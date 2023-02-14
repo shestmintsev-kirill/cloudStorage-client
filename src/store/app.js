@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import $snackBar from '@/utils/snackBar'
+import $snackBar from '@/services/snackBar'
 
 export const useAppStore = defineStore('app', {
 	state: () => ({

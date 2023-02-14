@@ -6,7 +6,6 @@
 			:nodes="storageStore.filesTree"
 			v-model:selected="storageStore.selected"
 			v-model:expanded="storageStore.expanded"
-			@update:expanded="expandController"
 			@lazy-load="storageStore.OPEN_FOLDER"
 		>
 			<template v-slot:default-header="prop">
@@ -41,9 +40,6 @@ const storageStore = useStorageStore()
 const tree = ref(null)
 
 const labelForTree = label => (label.length > 20 ? `${label?.substr(0, 20)}...` : label)
-const expandController = (event) => {
-	console.log(event);
-}
 
 onMounted(() => {
 	storageStore.treeRef = tree

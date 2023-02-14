@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { Files } from '@/api/files'
-import $app from '@/utils/app'
-import $snackBar from '@/utils/snackBar'
+import $app from '@/helpers'
+import $snackBar from '@/services/snackBar'
 
 export const useStorageStore = defineStore('storage', {
 	state: () => ({
@@ -122,7 +122,9 @@ export const useStorageStore = defineStore('storage', {
 					}
 				}
 				await updateRecursiveFn(this.filesTree)
+
 				this.expanded = acc
+				this.history = this.history.filter(el => this.expanded.includes(el.folderId))
 
 				if (localStorage?.selected) {
 					const lastSelectedFolder = JSON.parse(localStorage?.selected)

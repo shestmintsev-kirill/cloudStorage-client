@@ -6,13 +6,22 @@ export const instance = axios.create({
 
 instance.interceptors.request.use(
 	request => {
-		// Do something before request is sent
 		let token = localStorage.getItem('cloudToken') || ''
 		if (token) request.headers.Authorization = `Bearer ${token}`
 		return request
 	},
 	error => {
-		// Do something with request error
+		return Promise.reject(error)
+	}
+)
+
+instance.interceptors.response.use(
+	response => response,
+	error => {
+		if ([401, 403].includes(error?.response?.status)) {
+			alert('Login error, please login again')
+			window.location.href = '/login'
+		}
 		return Promise.reject(error)
 	}
 )
