@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { UserStorage } from '@/services/userStorage'
+import { useAppStore } from '@/store/app'
 
 export const instance = axios.create({
 	baseURL: 'http://localhost:3000/'
@@ -6,7 +8,7 @@ export const instance = axios.create({
 
 instance.interceptors.request.use(
 	request => {
-		let token = localStorage.getItem('cloudToken') || ''
+		let token = UserStorage.getItem('cloudToken') || ''
 		if (token) request.headers.Authorization = `Bearer ${token}`
 		return request
 	},
@@ -19,8 +21,8 @@ instance.interceptors.response.use(
 	response => response,
 	error => {
 		if ([401, 403].includes(error?.response?.status)) {
-			alert('Login error, please login again')
-			window.location.href = '/login'
+			const appStore = useAppStore()
+			appStore.LOGOUT()
 		}
 		return Promise.reject(error)
 	}

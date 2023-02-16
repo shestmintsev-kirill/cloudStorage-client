@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { Files } from '@/api/files'
 import $app from '@/helpers'
 import $snackBar from '@/services/snackBar'
+import { useRepositoryStore } from './repository'
+import router from '@/router'
 
 export const useStorageStore = defineStore('storage', {
 	state: () => ({
@@ -22,6 +24,10 @@ export const useStorageStore = defineStore('storage', {
 	getters: {
 		getSelectedNode: state => {
 			return $app.findElementInDeepArray(state.filesTree, item => item.id === state.selected)
+		},
+		getStorageData: state => {
+			const { history, expanded, selected } = state
+			return { history, expanded, selected }
 		}
 	},
 	actions: {
@@ -39,9 +45,11 @@ export const useStorageStore = defineStore('storage', {
 		async GET_FOLDER_CONTENT(folderId) {
 			if (!folderId) return
 
-			if (localStorage?.history) {
-				const lastHistory = JSON.parse(localStorage?.history)
-				if (lastHistory && !this.history.length) this.history = lastHistory
+			const repoStore = useRepositoryStore()
+			const { history: repoHistory } = repoStore.repository
+
+			if (repoHistory?.length) {
+				if (repoHistory && !this.history.length) this.history = repoHistory
 			}
 
 			this.isFolderContentLoading = true
@@ -59,7 +67,6 @@ export const useStorageStore = defineStore('storage', {
 
 			this.isPauseForHistory = false
 			this.isFolderContentLoading = false
-			localStorage.history = JSON.stringify(this.history)
 		},
 		PREPARED_FOLDER_DATA(nodes, isOnlyFolders) {
 			const preparedNodes = nodes.map(node => ({
@@ -82,9 +89,17 @@ export const useStorageStore = defineStore('storage', {
 					this.SET_SELECTED(null)
 					const res = await Files.searchFiles(search)
 					this.folderData = this.PREPARED_FOLDER_DATA(res.data)
+					router.push({ query: { search } })
 					this.isFolderContentLoading = false
 				}, 500)
-			} else this.GET_FOLDER_CONTENT(this.selected)
+			} else {
+				this.SEARCH_RESET()
+				this.GET_FOLDER_CONTENT(this.selected)
+			}
+		},
+		SEARCH_RESET() {
+			this.searchValue = ''
+			router.replace({ query: {} })
 		},
 		SET_SELECTED(id, withoutHistory) {
 			if (withoutHistory) this.isPauseForHistory = true
@@ -100,10 +115,13 @@ export const useStorageStore = defineStore('storage', {
 				this.filesTree = []
 				await this.GET_TREE()
 
+				const repoStore = useRepositoryStore()
+				const { expanded: repoExpanded, selected: repoSelected } = repoStore.repository
+
 				const expanded = this.expanded.length
 					? this.expanded
-					: localStorage?.expanded
-					? JSON.parse(localStorage.expanded)
+					: repoExpanded?.length
+					? repoExpanded
 					: []
 
 				const acc = []
@@ -126,11 +144,8 @@ export const useStorageStore = defineStore('storage', {
 				this.expanded = acc
 				this.history = this.history.filter(el => this.expanded.includes(el.folderId))
 
-				if (localStorage?.selected) {
-					const lastSelectedFolder = JSON.parse(localStorage?.selected)
-					if (lastSelectedFolder && !this.selected) {
-						this.SET_SELECTED(lastSelectedFolder, true)
-					}
+				if (repoSelected?.length) {
+					if (repoSelected && !this.selected) this.SET_SELECTED(repoSelected, true)
 				}
 			} catch (error) {
 				console.error(error)

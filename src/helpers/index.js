@@ -6,7 +6,6 @@ export default {
 	 * @param children_key name of deeps
 	 * @returns found element
 	 */
-
 	findElementInDeepArray(arr = [], search, children_key = 'children') {
 		if (typeof children_key !== 'string' || !Array.isArray(arr)) {
 			throw new Error(
@@ -34,5 +33,12 @@ export default {
 		let sizes = ['б', 'Кб', 'Мб', 'Гб', 'Тб', 'PB', 'EB', 'ZB', 'YB']
 		let i = Math.floor(Math.log(bytes) / Math.log(k))
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+	},
+
+	isEqualObjects(firstObj, secondObj) {
+		return (
+			JSON.stringify(firstObj).split('').sort().join() ===
+			JSON.stringify(secondObj).split('').sort().join()
+		)
 	}
 }

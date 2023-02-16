@@ -26,7 +26,13 @@
 				</q-item-section>
 				<q-item-section>{{ avatarBtnText }}</q-item-section>
 			</q-item>
-			<q-item clickable @click="logout">
+			<q-item clickable @click="repositoryStore.RESET_REPO" :disable="isRepoDisabled">
+				<q-item-section side class="q-pr-md">
+					<q-icon size="20px" name="cloud_off" />
+				</q-item-section>
+				<q-item-section>Reset repository</q-item-section>
+			</q-item>
+			<q-item clickable @click="appStore.LOGOUT">
 				<q-item-section side class="q-pr-md">
 					<q-icon size="20px" name="logout" />
 				</q-item-section>
@@ -37,13 +43,20 @@
 </template>
 
 <script setup>
+import { useRepositoryStore } from '@/store/repository'
 import { useAppStore } from '@/store/app'
-import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
-import $snackBar from '@/services/snackBar'
 
+defineProps({
+	isRepoDisabled: {
+		type: Boolean,
+		required: true,
+		default: false
+	}
+})
+
+const repositoryStore = useRepositoryStore()
 const appStore = useAppStore()
-const router = useRouter()
 
 const fileInput = ref(null)
 const userMenu = ref(null)
@@ -55,12 +68,6 @@ const avatarBtnText = computed(() =>
 		: `${appStore.avatarUploadController ? 'Avatar is uploading' : 'Upload avatar'}`
 )
 
-const logout = () => {
-	appStore.SET_USER(null)
-	router.push('/login')
-	$snackBar.success('Logout')
-}
-
 const avatarEvent = async () => {
 	if (appStore.avatarUploadController) return
 	if (avatar.value) {
@@ -68,7 +75,6 @@ const avatarEvent = async () => {
 		userMenu.value?.hide()
 	} else fileInput.value.click()
 }
-
 const uploadAvatar = async () => {
 	await appStore.UPLOAD_AVATAR(fileInput.value.files[0])
 	userMenu.value?.hide()

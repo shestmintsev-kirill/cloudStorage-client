@@ -11,7 +11,7 @@
 				<q-icon
 					name="close"
 					class="cursor-pointer"
-					@click.stop.prevent="storageStore.searchValue = ''"
+					@click.stop.prevent="storageStore.SEARCH_RESET"
 				/>
 			</template>
 		</q-input>
@@ -138,7 +138,6 @@ watch(
 			}
 			node.icon = oldIsBigger ? 'folder' : 'folder_open'
 		}
-		localStorage.expanded = JSON.stringify(newValue)
 	}
 )
 

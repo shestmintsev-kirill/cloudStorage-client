@@ -1,16 +1,14 @@
 import { Auth } from '@/api/auth'
 import { useAppStore } from '@/store/app'
 import $snackBar from '@/services/snackBar'
-import { UserStorage } from '@/services/userStorage'
 
-export default async ({ next, redirect }) => {
+export default async ({ from, to, next, redirect }) => {
+	if (to.path === from.path) return next()
+
 	const response = await Auth.auth()
 	if (response?.data) {
-		const { id, email } = response.data
 		const appStore = useAppStore()
-		appStore.SET_USER(response.data)
-		if (!UserStorage.getItem('user-name')) UserStorage.create(`${email}_${id}`)
-		// TODO 'change all storage to user-storage
+		await appStore.SET_USER(response.data)
 		return next()
 	}
 	console.warn(response)

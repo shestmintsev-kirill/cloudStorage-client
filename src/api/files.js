@@ -1,14 +1,21 @@
 import { useFilesStore } from '@/store/files'
 import { useAppStore } from '@/store/app'
 import { instance } from './api'
+import { useStorageStore } from '@/store/storage'
+import { useRepositoryStore } from '@/store/repository'
 
 export const Files = {
 	async getFiles(parent, sort) {
 		try {
 			const res = await instance.get('api/files/', { params: { parent, sort } })
+			const storageState = useStorageStore()
+			if (!storageState.storageLoading) {
+				const repoStore = useRepositoryStore()
+				await repoStore.UPDATE_REPO(storageState.getStorageData)
+			}
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.log(error)
 		}
 	},
 	async createFolder({ name, parent, type }) {
@@ -21,7 +28,7 @@ export const Files = {
 			const res = await instance.post('api/files/', body)
 			return res
 		} catch (error) {
-			console.error(error.response.data.message)
+			console.error(error)
 			return error.response.data
 		}
 	},
@@ -101,7 +108,7 @@ export const Files = {
 			})
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.log(error)
 			return error.response.data
 		}
 	},
@@ -114,7 +121,7 @@ export const Files = {
 			})
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.log(error)
 		}
 	},
 	async uploadAvatar(files) {

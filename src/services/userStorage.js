@@ -2,7 +2,7 @@ const storageName = 'user-storage'
 
 // Store user info in localStorage
 export const UserStorage = {
-	create: (user) => {
+	create: user => {
 		let storage = getUserStorageData()
 		if (!storage || user !== Object.keys(storage)[0]) {
 			let obj = {}
@@ -12,7 +12,7 @@ export const UserStorage = {
 			UserStorage.setItem('user-name', user)
 		}
 	},
-	getItem: (key) => {
+	getItem: key => {
 		let value = null
 		const storage = getUserStorageData()
 		if (storage) {
@@ -33,7 +33,7 @@ export const UserStorage = {
 		}
 		localStorage.setItem(storageName, JSON.stringify(storage))
 	},
-	removeItem: (key) => {
+	removeItem: key => {
 		const storage = getUserStorageData()
 		if (storage) {
 			const userName = Object.keys(storage)[0]
@@ -46,7 +46,7 @@ export const UserStorage = {
 	}
 }
 
-export function getUserStorageData () {
+export function getUserStorageData() {
 	const storageStr = localStorage.getItem(storageName)
 	let data = null
 	if (storageStr && storageStr !== 'null' && storageStr.length > 0) {

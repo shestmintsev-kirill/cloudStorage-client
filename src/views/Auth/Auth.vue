@@ -26,7 +26,11 @@
 			</q-input>
 
 			<div>
-				<q-btn label="Login" type="submit" color="primary" />
+				<q-btn
+					:label="isRegistration ? 'Registration' : 'Login'"
+					type="submit"
+					color="primary"
+				/>
 				<q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
 			</div>
 		</q-form>
@@ -57,16 +61,15 @@ const onSubmit = async () => {
 			email: email.value,
 			password: password.value
 		})
-		if (!isRegistration.value && res.status === 200) {
-			SET_USER(res.data)
+		if (!isRegistration.value && res?.status === 200) {
+			await SET_USER(res.data)
 		}
-		if (isRegistration.value ? res.data.message : res.data?.token) {
+		if (isRegistration.value ? res?.data?.message : res?.data?.token) {
 			$snackBar.success(isRegistration.value ? res.data.message : 'Submitted')
 			router.push(isRegistration.value ? '/login' : '/files')
-		}
+		} else $snackBar.error(res?.response?.data?.message ?? 'Login error')
 	} catch (error) {
-		console.log(error)
-		$snackBar.error('Error')
+		console.warn(error)
 	}
 }
 

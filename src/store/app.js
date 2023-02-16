@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
 import $snackBar from '@/services/snackBar'
+import { UserStorage } from '@/services/userStorage'
+import router from '@/router'
+import { useStorageStore } from './storage'
+import { useRepositoryStore } from './repository'
 
 export const useAppStore = defineStore('app', {
 	state: () => ({
@@ -13,9 +17,18 @@ export const useAppStore = defineStore('app', {
 		getIsAuth: state => state.isAuth
 	},
 	actions: {
-		SET_USER(payload) {
-			if (payload) localStorage.cloudToken = payload?.token
-			else localStorage.removeItem('cloudToken')
+		async SET_USER(payload) {
+			if (payload) {
+				const { id, email, token } = payload
+				if (!UserStorage.getItem('user-name')?.includes(id)) {
+					UserStorage.create(`${email}_${id}`)
+				}
+
+				UserStorage.setItem('cloudToken', token)
+
+				const repoStore = useRepositoryStore()
+				await repoStore.GET_REPO()
+			} else UserStorage.removeItem('cloudToken')
 			this.currentUser = payload
 			this.isAuth = !!payload
 		},
@@ -49,6 +62,14 @@ export const useAppStore = defineStore('app', {
 				console.warn(error)
 				$snackBar.error('Remove error')
 			}
+		},
+		async LOGOUT() {
+			const storageStore = useStorageStore()
+			await this.SET_USER(null)
+			storageStore.$reset()
+			UserStorage.removeAll()
+			router.push('/login')
+			$snackBar.success('Logout')
 		}
 	}
 })

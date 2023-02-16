@@ -1,4 +1,5 @@
 import { instance } from './api'
+import { UserStorage } from '@/services/userStorage'
 
 export const Auth = {
 	async login({ email, password }) {
@@ -9,7 +10,8 @@ export const Auth = {
 			})
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.error(error)
+			return error
 		}
 	},
 	async registration({ email, password }) {
@@ -20,20 +22,18 @@ export const Auth = {
 			})
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
+			console.error(error)
+			return error
 		}
 	},
 	async auth() {
 		try {
-			const res = await instance.get('api/auth/auth', {
-				headers: {
-					Authorization: `Bearer ${localStorage?.cloudToken}`
-				}
-			})
+			const res = await instance.get('api/auth/auth')
 			return res
 		} catch (error) {
-			console.log(error.response.data.message)
-			localStorage.removeItem('cloudToken')
+			console.error(error)
+			UserStorage.removeItem('cloudToken')
+			return error
 		}
 	}
 }

@@ -49,7 +49,6 @@ watch(
 	computed(() => storageStore.selected),
 	newNodeId => {
 		try {
-			localStorage.selected = JSON.stringify(newNodeId)
 			if (newNodeId) {
 				tree.value.setExpanded(newNodeId, true)
 				storageStore.SET_FOLDER_CONTENT(newNodeId)
