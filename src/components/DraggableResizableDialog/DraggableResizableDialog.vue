@@ -12,10 +12,6 @@
 		@hide="onHide"
 	>
 		<q-card
-			v-click-back-drop-dialog="{
-				clickHandler: hideModalHandlerBackDropLayer,
-				selector: `#${id} .q-dialog__backdrop`
-			}"
 			v-draggable-resizable="{
 				id: id,
 				isDraggable: draggable,
